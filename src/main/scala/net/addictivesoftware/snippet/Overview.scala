@@ -9,7 +9,7 @@ import net.liftweb.mapper.{Ascending, OrderBy, Descending}
 class Overview {
 
   def statuses(in: NodeSeq): NodeSeq =  {
-    val statuses = BuildStatus.findAll(OrderBy(BuildStatus.id, Descending))
+    val statuses = BuildStatus.findAll(OrderBy(BuildStatus.timestamp, Descending))
     statuses.flatMap {
       case (buildStatus) => bind("status", in,
                 "job" -> buildStatus.job,
