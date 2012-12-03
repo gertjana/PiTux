@@ -1,0 +1,90 @@
+package net.addictivesoftware.actors
+
+import net.liftweb.actor.LiftActor
+import net.liftweb.util.Schedule
+import net.liftweb.util.Helpers._
+import net.liftweb.util.HttpHelpers
+import net.liftweb.json._
+import net.addictivesoftware.model.BuildStatus
+import dispatch._
+import java.util.Date
+import net.liftweb.mapper.By
+import net.liftweb.common.Full
+
+object BuildStatusRetrievalActor extends LiftActor {
+  case class RetrieveStatus(jobName:String, interval:Int)
+  case class Stop()
+
+  private var stopped = false
+
+  implicit val formats = net.liftweb.json.DefaultFormats
+
+  def messageHandler = {
+    case RetrieveStatus(jobName, interval) =>
+      if (!stopped)
+        Schedule.schedule(this, RetrieveStatus(jobName, interval), interval minutes)
+      try {
+        println("Running job " + jobName)
+        val request = url("http://masterbuild01.ams.dev:8080/hudson/job/" + myUrlEncode(jobName) + "/lastBuild/api/json")
+        //val request = url("https://major7.ci.cloudbees.com/job/Medicate_GitHub/lastBuild/api/json") as("gertjan.assies@gmail.com", "4268f1a246970e114d4fb62e62c37b46")
+        val response:String = Http(request as_str)
+
+        val bs = parse(response)
+
+        val isBuilding = (bs \ "building").extract[Boolean]
+
+        if (!isBuilding) {
+
+          val date = new Date((bs \ "timestamp").extract[Long])
+
+          var culprits = ""
+          val culpritsList:List[String] = List()
+          val culpritsListJson = (bs \ "culprits" \ "fullName")
+
+          if (culpritsListJson.isInstanceOf[JArray])
+            culpritsList :: culpritsListJson.extract[List[String]]
+            if (culpritsList.size > 0) {
+              culprits = culpritsList.reduceLeft(_ + ", " + _)
+            }
+          else if (culpritsListJson.isInstanceOf[JString])
+            culprits = culpritsListJson.extract[String]
+          else
+            culprits = "..."
+
+          val buildStatus = new BuildStatus()
+            .job(jobName)
+            .buildId((bs \ "id").extract[String])
+            .number((bs \ "number").extract[Long])
+            .result((bs \ "result").extract[String])
+            .timestamp(date)
+            .culprits(culprits)
+
+          //only save a build status once
+          BuildStatus.find(
+                        By(BuildStatus.buildId, buildStatus.buildId),
+                        By(BuildStatus.job, jobName)) match {
+            case Full(bs) => {
+              println("already known build")
+            }
+            case (_) => {
+              val savedBS = buildStatus.saveMe();
+              println("saving " + savedBS)
+            }
+          }
+      } else {
+        println("skipping not finished build")
+      }
+    } catch {
+      case e:Exception => {println(e.getMessage)}
+    }
+
+    case Stop =>
+      stopped = true
+  }
+
+  private def myUrlEncode(in: String) = {
+    urlEncode(in).replace("+", "%20")
+  }
+}
+
+

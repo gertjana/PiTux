@@ -1,0 +1,37 @@
+<lift:surround with="default" at="content">
+  <h2>Overview</h2>
+    <h3>Jobs</h3>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Interval</th>
+        </tr>
+        <lift:Overview.jobs>
+            <tr>
+                <td><job:name /></td>
+                <td><job:interval /></td>
+            </tr>
+        </lift:Overview.jobs>
+    </table>
+
+    <h3>Last known statuses</h3>
+	<table>
+        <tr>
+            <th>Job</th>
+            <th>Build#</th>
+            <th>Result</th>
+            <th>Time</th>
+            <th>Culprits</th>
+        </tr>
+      <lift:Overview.statuses>
+        <tr>
+            <td><status:job /></td>
+            <td><status:number /></td>
+            <td><status:result /></td>
+            <td><status:timestamp /></td>
+            <td><status:culprits /></td>
+        </tr>
+      </lift:Overview.statuses>
+    </table>
+</lift:surround>
+
