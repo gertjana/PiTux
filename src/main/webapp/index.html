@@ -1,6 +1,29 @@
 <lift:surround with="default" at="content">
   <h2>Overview</h2>
     <hr/>
+    <h3>Schedule</h3>
+    <p>The Penquin will loop through this schedule</p>
+    <table>
+        <tr>
+            <th colspan="2">Eyes</th>
+            <th>LCD</th>
+        </tr>
+        <lift:Overview.schedule>
+            <tr>
+                <td schedule:result=""><div></div></td>
+                <td schedule:result=""><div></div></td>
+                <td class="LCD">
+                    <div>
+                        <div>
+                            <schedule:job /><br/>
+                            <schedule:culprits />
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </lift:Overview.schedule>
+    </table>
+    <hr/>
     <h3>Jobs</h3>
     <p>Use the Create/List Job menu to manage jobs</p>
     <table>
