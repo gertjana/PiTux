@@ -80,6 +80,8 @@ object BuildStatusRetrievalActor extends LiftActor {
 
     case Stop =>
       stopped = true
+    case (_) =>
+      println("unknown message recieved")
   }
 
   private def myUrlEncode(in: String) = {

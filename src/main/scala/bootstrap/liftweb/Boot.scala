@@ -63,11 +63,15 @@ class Boot {
     S.addAround(DB.buildLoanWrapper)
 
 
-
+    BuildStatusTuxScheduler ! BuildStatusTuxScheduler.ScheduleTux
     // Setup Actor to retrieve Build Statuses
-
     BuildStatusScheduler ! BuildStatusScheduler.ScheduleJobs
+    // Actor to drive Penquin
+
+
+
     LiftRules.unloadHooks.append( () => BuildStatusScheduler ! BuildStatusScheduler.Stop )
+    LiftRules.unloadHooks.append( () => BuildStatusTuxScheduler ! BuildStatusTuxScheduler.Stop )
   }
 
   /**
