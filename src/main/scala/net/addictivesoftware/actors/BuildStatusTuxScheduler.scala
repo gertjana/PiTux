@@ -40,10 +40,10 @@ object BuildStatusTuxScheduler extends LiftActor {
 
   private def displayStatus(job:String, result:String, culprits:String) {
     println(result)
-    println("/========================/")
+    println("/========================================/")
     println("/ " + job)
     println("/ " + culprits)
-    println("/========================/")
+    println("/========================================/")
   }
 
 }
