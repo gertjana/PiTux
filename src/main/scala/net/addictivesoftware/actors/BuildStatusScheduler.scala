@@ -8,20 +8,20 @@ object BuildStatusScheduler extends LiftActor {
   case class ScheduleJobs()
   case class Stop()
   case class ResetJobs()
-  case class AddJob(jobName:String, interval:Int)
+  case class AddJob(jobName:String, jobId:String, interval:Int)
 
   def messageHandler = {
     case ScheduleJobs => {
       println("scheduling jobs")
       Job.findAll().map(job => {
-          BuildStatusRetrievalActor ! BuildStatusRetrievalActor.RetrieveStatus(job.name.is, job.interval.is)
+          BuildStatusRetrievalActor ! BuildStatusRetrievalActor.RetrieveStatus(job.name.is, job.jobid.is, job.interval.is)
       })
     }
 
-    case AddJob(jobName:String, interval:Int) => {
+    case AddJob(jobName:String, jobId:String, interval:Int) => {
       println("adding job :" + jobName)
       if (jobName.length > 0 && interval > 0)
-        BuildStatusRetrievalActor ! BuildStatusRetrievalActor.RetrieveStatus(jobName, interval)
+        BuildStatusRetrievalActor ! BuildStatusRetrievalActor.RetrieveStatus(jobName, jobId, interval)
     }
 
     case ResetJobs => {

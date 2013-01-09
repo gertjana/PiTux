@@ -15,33 +15,52 @@ object BuildStatusTuxScheduler extends LiftActor {
   private var stopped = false
 
   protected def messageHandler = {
-    case ScheduleTux => {
-      Tux.i2cBus = Int.unbox(Props.get("i2c.bus"))
-      Tux.i2cAddress = Byte.unbox(Props.get("i2c.address"))
+    case ScheduleTux =>
+      try {
+        val bus = Props.get("i2c.bus").open_!
+        val address = Props.get("i2c.address").open_!
 
-      println("I2C Bus : " + Tux.i2cBus)
-      println("I2C Address : " + Tux.i2cAddress)
-      println("Schedule Tux")
-      val rotationJobs:mutable.HashMap[String,(String,String)] = new mutable.HashMap[String,(String, String)]()
-      val bs = BuildStatus.findAll(OrderBy(BuildStatus.timestamp, Descending))
-      val jobs:List[String] = Job.findAll().map(_.name.is)
-      for (status <- bs) {
-        if (!rotationJobs.contains(status.job.is) && jobs.contains(status.job.is)) {
-          rotationJobs.put(status.job.is, (status.result.is, status.culprits.is))
+        Tux.i2cBus = bus.toInt
+        Tux.i2cAddress = address.toByte
+
+        println("Schedule Tux...")
+        val rotationJobs: mutable.HashMap[String, (String, String)] = new mutable.HashMap[String, (String, String)]()
+        val bs = BuildStatus.findAll(OrderBy(BuildStatus.timestamp, Descending))
+        val jobs: List[String] = Job.findAll().map(_.jobid.is)
+        val aggregated: mutable.HashMap[String, Int] = new mutable.HashMap[String, Int]()
+        aggregated.+=(("SUCCESS", 0))
+        aggregated.+=(("UNSTABLE", 0))
+        aggregated.+=(("FAILURE", 0))
+
+        for (status <- bs) {
+          if (!rotationJobs.contains(status.job.is) && jobs.contains(status.job.is)) {
+            rotationJobs.put(status.job.is, (status.result.is, status.culprits.is))
+            aggregated.update(status.result.is, aggregated.get(status.result.is).get*100/rotationJobs.size)
+          }
+        }
+
+        if (rotationJobs.size == 0) {
+          Tux.setStatus("OFF", "No jobs found", "please add some")
+        } else {
+          Tux.setStatus("OFF", "Looping through", String.format("%s builds", ""+rotationJobs.size))
+          Tux.setStatus("OFF", "SUCC/UNST/FAIL",
+            String.format("%s / %s / %s",""+aggregated.get("SUCCESS").get,""+aggregated.get("UNSTABLE").get, ""+aggregated.get("FAILURE").get ))
+          Thread.sleep(5000)
+        }
+
+        rotationJobs.foreach(status => {
+          println("setting status for " + status._1)
+          Tux.setStatus(status._2._1, status._1, status._2._2)
+          Thread.sleep(5000)
+        })
+      } catch {
+        case e: Exception => e.printStackTrace(System.out)
+      } finally {
+        if (!stopped) {
+          Schedule.schedule(this, ScheduleTux, 10 seconds)
         }
       }
-      if (rotationJobs.size == 0) {
-        Tux.setStatus("OFF", "No jobs found", "please add some")
-      }
 
-      rotationJobs.foreach(status => {
-        Tux.setStatus(status._2._1, status._1, status._2._2)
-        Thread.sleep(10000)
-      })
-      if (!stopped) {
-        Schedule.schedule(this, ScheduleTux, 5 seconds)
-      }
-    }
     case Stop =>
       this.stopped = true
     case (_) =>

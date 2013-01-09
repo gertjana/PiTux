@@ -36,7 +36,7 @@ class Overview {
   def schedule(in: NodeSeq): NodeSeq = {
     val rotationJobs:mutable.HashMap[String,(String,String)] = new mutable.HashMap[String,(String, String)]()
     val bs = BuildStatus.findAll(OrderBy(BuildStatus.timestamp, Descending))
-    val jobs:List[String] = Job.findAll().map(_.name.is);
+    val jobs:List[String] = Job.findAll().map(_.jobid.is);
     for (status <- bs) {
       if (!rotationJobs.contains(status.job.is) && jobs.contains(status.job.is)) {
         rotationJobs.put(status.job.is, (status.result.is, status.culprits.is))

@@ -1,4 +1,5 @@
 # Properties in this file will be read when running in dev mode
 jenkins.url=http://masterbuild01.ams.dev:8080/hudson/job/%s/lastBuild/api/json
 i2c.bus=0
-i2c.address=0x41
+#0x41
+i2c.address=65

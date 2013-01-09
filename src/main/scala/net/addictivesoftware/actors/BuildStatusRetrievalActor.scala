@@ -11,7 +11,7 @@ import net.liftweb.mapper.By
 import net.liftweb.common.{Box, Full}
 
 object BuildStatusRetrievalActor extends LiftActor {
-  case class RetrieveStatus(jobName:String, interval:Int)
+  case class RetrieveStatus(jobName:String, jobId:String, interval:Int)
   case class Stop()
 
   private var stopped = false
@@ -21,9 +21,9 @@ object BuildStatusRetrievalActor extends LiftActor {
   private val jenkinsUrl:Box[String] = Props.get("jenkins.url")
 
   def messageHandler = {
-    case RetrieveStatus(jobName, interval) =>
+    case RetrieveStatus(jobName, jobId, interval) =>
       if (!stopped)
-        Schedule.schedule(this, RetrieveStatus(jobName, interval), interval minutes)
+        Schedule.schedule(this, RetrieveStatus(jobName, jobId, interval), interval minutes)
       try {
         println("Running job " + jobName)
         jenkinsUrl match {
@@ -54,7 +54,7 @@ object BuildStatusRetrievalActor extends LiftActor {
                 culprits = "..."
 
               val buildStatus = new BuildStatus()
-                .job(jobName)
+                .job(jobId)
                 .buildId((bs \ "id").extract[String])
                 .number((bs \ "number").extract[Long])
                 .result((bs \ "result").extract[String])
@@ -64,7 +64,7 @@ object BuildStatusRetrievalActor extends LiftActor {
               //only save a build status once
               BuildStatus.find(
                 By(BuildStatus.buildId, buildStatus.buildId),
-                By(BuildStatus.job, jobName)) match {
+                By(BuildStatus.job, jobId)) match {
                 case Full(bs) => {
                   println("already known build")
                 }
