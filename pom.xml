@@ -12,6 +12,7 @@
   <name>PiTux Project</name>
   <inceptionYear>2012</inceptionYear>
   <properties>
+    <pi4j.version>0.0.5-SNAPSHOT</pi4j.version>
     <scala.version>2.9.1</scala.version>
     <!-- Common plugin settings -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,9 +25,18 @@
 
   <repositories>
     <repository>
-      <id>scala-tools.releases</id>
-      <name>Scala-Tools Dependencies Repository for Releases</name>
-      <url>https://oss.sonatype.org/content/groups/scala-tools/</url>
+        <id>scala-tools.releases</id>
+        <name>Scala-Tools Dependencies Repository for Releases</name>
+        <url>https://oss.sonatype.org/content/groups/scala-tools/</url>
+    </repository>
+    <repository>
+        <id>oss-snapshots-repo</id>
+        <name>Sonatype OSS Maven Repository</name>
+        <url>https://oss.sonatype.org/content/groups/public</url>
+        <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+        </snapshots>
     </repository>
   </repositories>
 
@@ -86,18 +96,17 @@
           <artifactId>dispatch-http_2.9.1</artifactId>
           <version>0.8.8</version>
       </dependency>
-
       <dependency>
-          <groupId>net.addictivesoftware</groupId>
-          <artifactId>rpitux</artifactId>
-          <version>0.0.3-SNAPSHOT</version>
+          <groupId>com.pi4j</groupId>
+          <artifactId>pi4j-core</artifactId>
+          <version>${pi4j.version}</version>
       </dependency>
   </dependencies>
 
   <build>
       <finalName>pitux</finalName>
-    <sourceDirectory>src/main/scala</sourceDirectory>
-    <testSourceDirectory>src/test/scala</testSourceDirectory>
+<!--    <sourceDirectory>src/main/scala</sourceDirectory>
+    <testSourceDirectory>src/test/scala</testSourceDirectory>-->
     <plugins>
       <plugin>
         <groupId>org.scala-tools</groupId>
@@ -111,12 +120,26 @@
           </jvmArgs>
         </configuration>
         <executions>
-          <execution>
-            <goals>
-              <goal>compile</goal>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
+            <execution>
+                <id>compile</id>
+                <goals>
+                    <goal>compile</goal>
+                </goals>
+                <phase>compile</phase>
+            </execution>
+            <execution>
+                <id>test-compile</id>
+                <goals>
+                    <goal>testCompile</goal>
+                </goals>
+                <phase>test-compile</phase>
+            </execution>
+            <execution>
+                <phase>process-resources</phase>
+                <goals>
+                    <goal>compile</goal>
+                </goals>
+            </execution>
         </executions>
       </plugin>
       <plugin>

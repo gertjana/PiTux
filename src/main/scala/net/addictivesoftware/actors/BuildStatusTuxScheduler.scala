@@ -20,8 +20,9 @@ object BuildStatusTuxScheduler extends LiftActor {
         val bus = Props.get("i2c.bus").open_!
         val address = Props.get("i2c.address").open_!
 
-        Tux.i2cBus = bus.toInt
-        Tux.i2cAddress = address.toByte
+        val tux = new Tux();
+        tux.i2cBus = bus.toInt
+        tux.i2cAddress = address.toByte
 
         println("Schedule Tux...")
         val rotationJobs: mutable.HashMap[String, (String, String)] = new mutable.HashMap[String, (String, String)]()
@@ -35,22 +36,26 @@ object BuildStatusTuxScheduler extends LiftActor {
         for (status <- bs) {
           if (!rotationJobs.contains(status.job.is) && jobs.contains(status.job.is)) {
             rotationJobs.put(status.job.is, (status.result.is, status.culprits.is))
-            aggregated.update(status.result.is, aggregated.get(status.result.is).get*100/rotationJobs.size)
+            aggregated.update(status.result.is, aggregated.get(status.result.is).get+1)
           }
         }
 
         if (rotationJobs.size == 0) {
-          Tux.setStatus("OFF", "No jobs found", "please add some")
+          tux.setStatus("OFF", "No jobs found", "please add some")
         } else {
-          Tux.setStatus("OFF", "Looping through", String.format("%s builds", ""+rotationJobs.size))
-          Tux.setStatus("OFF", "SUCC/UNST/FAIL",
-            String.format("%s / %s / %s",""+aggregated.get("SUCCESS").get,""+aggregated.get("UNSTABLE").get, ""+aggregated.get("FAILURE").get ))
+          tux.setStatus("OFF", "Looping through", String.format("%s builds", ""+rotationJobs.size))
+          tux.setStatus("OFF", "SUCC/UNST/FAIL",
+            String.format("%s%%/%s%%/%s%%",
+              ""+(aggregated.get("SUCCESS").get*100/rotationJobs.size),
+              ""+(aggregated.get("UNSTABLE").get*100/rotationJobs.size),
+              ""+(aggregated.get("FAILURE").get*100/rotationJobs.size)
+            ))
           Thread.sleep(5000)
         }
 
         rotationJobs.foreach(status => {
           println("setting status for " + status._1)
-          Tux.setStatus(status._2._1, status._1, status._2._2)
+          tux.setStatus(status._2._1, status._1, status._2._2)
           Thread.sleep(5000)
         })
       } catch {
