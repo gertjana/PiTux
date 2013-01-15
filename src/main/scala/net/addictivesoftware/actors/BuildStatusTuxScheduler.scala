@@ -20,7 +20,7 @@ object BuildStatusTuxScheduler extends LiftActor {
         val bus = Props.get("i2c.bus").open_!
         val address = Props.get("i2c.address").open_!
 
-        val tux = new Tux();
+        val tux = new Tux()
         tux.i2cBus = bus.toInt
         tux.i2cAddress = address.toByte
 
@@ -44,11 +44,12 @@ object BuildStatusTuxScheduler extends LiftActor {
           tux.setStatus("OFF", "No jobs found", "please add some")
         } else {
           tux.setStatus("OFF", "Looping through", String.format("%s builds", ""+rotationJobs.size))
-          tux.setStatus("OFF", "SUCC/UNST/FAIL",
-            String.format("%s%%/%s%%/%s%%",
-              ""+(aggregated.get("SUCCESS").get*100/rotationJobs.size),
-              ""+(aggregated.get("UNSTABLE").get*100/rotationJobs.size),
-              ""+(aggregated.get("FAILURE").get*100/rotationJobs.size)
+          Thread.sleep(2000)
+          tux.setStatus("OFF", "SUCC UNST FAIL",
+            String.format("%s%% %s%% %s%%",
+              fillOutText(""+(aggregated.get("SUCCESS").get*100/rotationJobs.size), 3, true),
+              fillOutText(""+(aggregated.get("UNSTABLE").get*100/rotationJobs.size), 3, true),
+              fillOutText(""+(aggregated.get("FAILURE").get*100/rotationJobs.size), 3, true)
             ))
           Thread.sleep(5000)
         }
@@ -62,7 +63,7 @@ object BuildStatusTuxScheduler extends LiftActor {
         case e: Exception => e.printStackTrace(System.out)
       } finally {
         if (!stopped) {
-          Schedule.schedule(this, ScheduleTux, 10 seconds)
+          Schedule.schedule(this, ScheduleTux, 1 seconds)
         }
       }
 
@@ -72,10 +73,16 @@ object BuildStatusTuxScheduler extends LiftActor {
       println("unknown message recieved")
   }
 
-  private def displayStatus(job:String, result:String, culprits:String) {
-
-
-
+  private def fillOutText(text:String, len:Int, left:Boolean):String = {
+    if (text.length >= len) {
+      text.substring(0,len);
+    } else {
+      if (!left) {
+        text + " " * (len-text.length())
+      } else {
+        " " * (len-text.length()) + text
+      }
+    }
   }
 
 }

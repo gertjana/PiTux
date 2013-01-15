@@ -18,6 +18,14 @@ public class Tux {
     private static Object pinRed = null;
     private static Object pinGreen = null;
 
+    static {
+        if (isArm) {
+            GpioController gpio = GpioFactory.getInstance();
+            pinRed = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_04, "Red LED", PinState.LOW);
+            pinGreen = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_05, "Green LED", PinState.LOW);
+        }
+    }
+
     public static void main(String[] args) {
 
         try {
@@ -35,11 +43,7 @@ public class Tux {
     }
 
     public Tux() {
-        if (isArm) {
-            GpioController gpio = GpioFactory.getInstance();
-            pinRed = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_04, "Red LED", PinState.LOW);
-            pinGreen = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_05, "Green LED", PinState.LOW);
-        }
+
     }
 
 
@@ -54,7 +58,9 @@ public class Tux {
                e.printStackTrace(System.out);
             }
         } else {
-            System.out.println(String.format("%s is %s you can blame %s", limitText(build), status, limitText(culprits)));
+            System.out.println(status);
+            System.out.println(limitText(build));
+            System.out.println(limitText(culprits));
         }
 
     }
