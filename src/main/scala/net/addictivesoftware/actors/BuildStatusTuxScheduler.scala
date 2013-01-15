@@ -57,7 +57,7 @@ object BuildStatusTuxScheduler extends LiftActor {
             ))
           Thread.sleep(5000)
           val leaders:List[(String, Long)] = Leaders.findAll().map(leader => new Tuple2(leader.culprits.is, leader.successCount.is-leader.failCount.is))
-            .sortBy(_._2).reverse.toStream.take(3).toList
+            .sortBy(_._2).reverse.toStream.take(5).toList
           if (leaders.length >= 1) {
               tux.setStatus("OFF", "Leaderboard:", String.format("1:%s (%s)", leaders.head._1, ""+leaders.head._2))
               Thread.sleep(5000)
