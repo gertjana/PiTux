@@ -3,7 +3,9 @@ package net.addictivesoftware.model
 import net.liftweb.mapper._
 
 
-class BuildStatus extends LongKeyedMapper[BuildStatus] with IdPK  {
+class BuildStatus extends LongKeyedMapper[BuildStatus]
+                  with IdPK  {
+
   def getSingleton = BuildStatus
 
   object job extends MappedString(this, 100)
@@ -14,7 +16,9 @@ class BuildStatus extends LongKeyedMapper[BuildStatus] with IdPK  {
   object culprits extends MappedString(this, 200)
 }
 
-object BuildStatus extends BuildStatus with LongKeyedMetaMapper[BuildStatus] with CRUDify[Long, BuildStatus] {
+object BuildStatus extends BuildStatus
+                   with LongKeyedMetaMapper[BuildStatus]
+                   with CRUDify[Long, BuildStatus] {
 
 }
 

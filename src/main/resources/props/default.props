@@ -3,3 +3,6 @@ jenkins.url=http://masterbuild01.ams.dev:8080/hudson/job/%s/lastBuild/api/json
 i2c.bus=0
 #0x41
 i2c.address=65
+success.count=1
+unstable.count=1
+fail.count=5

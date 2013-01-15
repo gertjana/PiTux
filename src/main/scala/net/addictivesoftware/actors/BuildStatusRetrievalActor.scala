@@ -4,7 +4,7 @@ import net.liftweb.actor.LiftActor
 import net.liftweb.util.{Props, Schedule, HttpHelpers}
 import net.liftweb.util.Helpers._
 import net.liftweb.json._
-import net.addictivesoftware.model.BuildStatus
+import net.addictivesoftware.model.{Leaders, BuildStatus}
 import dispatch._
 import java.util.Date
 import net.liftweb.mapper.By
@@ -19,6 +19,11 @@ object BuildStatusRetrievalActor extends LiftActor {
   implicit val formats = net.liftweb.json.DefaultFormats
 
   private val jenkinsUrl:Box[String] = Props.get("jenkins.url")
+  private val successCount:Int = Props.get("success.count").open_!.toInt
+  private val unstableCount:Int = Props.get("unstable.count").open_!.toInt
+  private val failCount:Int = Props.get("fail.count").open_!.toInt
+
+
 
   def messageHandler = {
     case RetrieveStatus(jobName, jobId, interval) =>
@@ -53,11 +58,13 @@ object BuildStatusRetrievalActor extends LiftActor {
               else
                 culprits = "..."
 
+              val result = (bs \ "result").extract[String]
+
               val buildStatus = new BuildStatus()
                 .job(jobId)
                 .buildId((bs \ "id").extract[String])
                 .number((bs \ "number").extract[Long])
-                .result((bs \ "result").extract[String])
+                .result(result)
                 .timestamp(date)
                 .culprits(culprits)
 
@@ -71,6 +78,7 @@ object BuildStatusRetrievalActor extends LiftActor {
                 case (_) => {
                   val savedBS = buildStatus.saveMe();
                   println("saving " + savedBS)
+                  updateLeaders(culprits, result)
                 }
               }
             } else {
@@ -89,6 +97,46 @@ object BuildStatusRetrievalActor extends LiftActor {
       stopped = true
     case (_) =>
       println("unknown message recieved")
+  }
+
+  private def updateLeaders(culprits:String, result:String) {
+
+
+    if (result.equals("...")) return
+    Leaders.find(By(Leaders.culprits, culprits)) match {
+      case (Full(leader)) => {
+        //existing Leader, updating
+        if (result.equals("SUCCESS")) {
+           leader.successCount(leader.successCount.is+successCount)
+        }
+        if (result.equals("UNSTABLE")) {
+          leader.failCount(leader.failCount.is+unstableCount)
+        }
+        if (result.equals("FAILURE")) {
+          leader.failCount(leader.failCount.is+failCount)
+        }
+
+        leader.save()
+      }
+      case (_) => {
+        //new Leader, creating
+        val leader = new Leaders()
+        leader.culprits(culprits)
+        if (result.equals("SUCCESS")) {
+          leader.successCount(successCount)
+          leader.failCount(0)
+        }
+        if (result.equals("UNSTABLE")) {
+          leader.successCount(0)
+          leader.failCount(unstableCount)
+        }
+        if (result.equals("FAILURE")) {
+          leader.successCount(0)
+          leader.failCount(failCount)
+        }
+        leader.save()
+      }
+    }
   }
 
   private def myUrlEncode(in: String) = {

@@ -34,7 +34,7 @@ class Boot {
 
     // where to search snippet
     LiftRules.addToPackages("net.addictivesoftware")
-    Schemifier.schemify(true, Schemifier.infoF _, BuildStatus, Job)
+    Schemifier.schemify(true, Schemifier.infoF _, BuildStatus, Job, Leaders)
 
     // Build SiteMap
     def sitemap() = SiteMap(

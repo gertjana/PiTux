@@ -4,7 +4,8 @@ import net.liftweb.mapper._
 import net.addictivesoftware.actors.BuildStatusScheduler
 
 
-class Job extends LongKeyedMapper[Job] with IdPK  {
+class Job extends LongKeyedMapper[Job]
+          with IdPK  {
   def getSingleton = Job
 
   object jobid extends MappedString(this, 16)
@@ -13,7 +14,9 @@ class Job extends LongKeyedMapper[Job] with IdPK  {
 
 }
 
-object Job extends Job with LongKeyedMetaMapper[Job] with CRUDify[Long, Job] {
+object Job extends Job
+           with LongKeyedMetaMapper[Job]
+           with CRUDify[Long, Job] {
 
 
   override def afterCreate = scheduleJobAfterCreate _ :: super.afterCreate

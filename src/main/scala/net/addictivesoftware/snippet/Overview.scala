@@ -2,11 +2,12 @@ package net.addictivesoftware.snippet
 
 import xml.{Text, NodeSeq}
 import net.liftweb.util.Helpers._
-import net.addictivesoftware.model.{Job, BuildStatus}
+import net.addictivesoftware.model.{Leaders, Job, BuildStatus}
 import net.liftweb.mapper._
 import net.liftweb.mapper.MaxRows
 import collection.mutable
 import net.liftweb.common.Full
+import collection.immutable.HashSet
 
 
 class Overview {
@@ -49,5 +50,16 @@ class Overview {
         AttrBindParam("result", rotationJob._2._1, "class"),
         "culprits" -> rotationJob._2._2)
     }.toSeq
+  }
+
+  def leaders(in:NodeSeq) : NodeSeq = {
+    val leaders:List[Leaders] = Leaders.findAll()
+    leaders.map(leader => new Tuple2(leader.culprits, leader.successCount-leader.failCount))
+        .sortBy(_._2).reverse
+        .flatMap {
+          case (a,b) => bind("leader", in,
+            "culprit" -> a,
+            "count" -> b)
+        }.toSeq
   }
 }
