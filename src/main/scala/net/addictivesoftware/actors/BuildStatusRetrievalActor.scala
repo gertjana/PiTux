@@ -60,25 +60,27 @@ object BuildStatusRetrievalActor extends LiftActor {
 
               val result = (bs \ "result").extract[String]
 
-              val buildStatus = new BuildStatus()
-                .job(jobId)
-                .buildId((bs \ "id").extract[String])
-                .number((bs \ "number").extract[Long])
-                .result(result)
-                .timestamp(date)
-                .culprits(culprits)
+              if (!result.equals("ABORTED")) {
+                val buildStatus = new BuildStatus()
+                  .job(jobId)
+                  .buildId((bs \ "id").extract[String])
+                  .number((bs \ "number").extract[Long])
+                  .result(result)
+                  .timestamp(date)
+                  .culprits(culprits)
 
-              //only save a build status once
-              BuildStatus.find(
-                By(BuildStatus.buildId, buildStatus.buildId),
-                By(BuildStatus.job, jobId)) match {
-                case Full(bs) => {
-                  println("already known build")
-                }
-                case (_) => {
-                  val savedBS = buildStatus.saveMe();
-                  println("saving " + savedBS)
-                  updateLeaders(culprits, result)
+                //only save a build status once
+                BuildStatus.find(
+                  By(BuildStatus.buildId, buildStatus.buildId),
+                  By(BuildStatus.job, jobId)) match {
+                  case Full(bs) => {
+                    println("already known build")
+                  }
+                  case (_) => {
+                    val savedBS = buildStatus.saveMe();
+                    println("saving " + savedBS)
+                    updateLeaders(culprits, result)
+                  }
                 }
               }
             } else {
