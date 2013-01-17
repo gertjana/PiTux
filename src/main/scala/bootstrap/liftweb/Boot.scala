@@ -40,7 +40,8 @@ class Boot {
     def sitemap() = SiteMap(
       Menu("Home") / "index" ::
       BuildStatus.menus :::
-      Job.menus
+      Job.menus :::
+      Leaders.menus
         :_*)
     LiftRules.setSiteMapFunc(sitemap)
 
