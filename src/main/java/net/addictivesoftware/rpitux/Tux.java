@@ -12,8 +12,8 @@ import java.nio.ByteBuffer;
 public class Tux {
     public static boolean isArm = SystemEnvironment.getSystemEnvironment().getOsArchitecture().equals("arm");
 
-    public int i2cBus = 1;
-    public byte i2cAddress = 0x41;
+    private int i2cBus = 1;
+    private byte i2cAddress = 0x41;
 
     private static Object pinRed = null;
     private static Object pinGreen = null;
@@ -38,14 +38,16 @@ public class Tux {
             tux.setStatus("FAILURE", "Thats too bad", "RPi forever and ever");
             Thread.sleep(2000);
         } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 
-    public Tux() {
+    public Tux() {}
 
+    public Tux(int bus, byte address) {
+        this.i2cBus = bus;
+        this.i2cAddress = address;
     }
-
 
     public void setStatus(String status, String build, String culprits) {
 
@@ -59,8 +61,10 @@ public class Tux {
             }
         } else {
             System.out.println(status);
+            System.out.println("--------------");
             System.out.println(limitText(build));
             System.out.println(limitText(culprits));
+            System.out.println("--------------");
         }
 
     }

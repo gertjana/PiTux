@@ -23,9 +23,7 @@ object BuildStatusTuxScheduler extends LiftActor {
         val bus = Props.get("i2c.bus").open_!
         val address = Props.get("i2c.address").open_!
 
-        val tux = new Tux()
-        tux.i2cBus = bus.toInt
-        tux.i2cAddress = address.toByte
+        val tux = new Tux(bus.toInt, address.toByte)
 
         println("Schedule Tux...")
         val rotationJobs: mutable.HashMap[String, (String, String)] = new mutable.HashMap[String, (String, String)]()
@@ -59,24 +57,31 @@ object BuildStatusTuxScheduler extends LiftActor {
           val leaders:List[(String, Long)] = Leaders.findAll().map(leader => new Tuple2(leader.culprits.is, leader.successCount.is-leader.failCount.is))
             .sortBy(_._2).reverse.toStream.take(5).toList
           if (leaders.length >= 1) {
-              tux.setStatus("OFF", "Leaderboard:", String.format("1:%s (%s)", leaders.head._1, ""+leaders.head._2))
+              tux.setStatus("OFF",
+                            "Leaderboard:",
+                            String.format("1:%s (%s)", leaders.head._1, ""+leaders.head._2))
               Thread.sleep(5000)
           }
           if (leaders.length == 2) {
-            tux.setStatus("OFF", String.format("2:%s (%s)", leaders.tail.head._1, ""+leaders.tail.head._2),
-                                 "")
+            tux.setStatus("OFF",
+                          String.format("2:%s (%s)", leaders.apply(1)._1, ""+leaders.apply(1)._2),
+                          "")
             Thread.sleep(5000)
-          } else if (leaders.length == 3) {
-            tux.setStatus("OFF", String.format("2:%s (%s)", leaders.tail.head._1, ""+leaders.tail.head._2),
-                                 String.format("3:%s (%s)", leaders.tail.tail.head._1, ""+leaders.tail.tail.head._2))
+          } else if (leaders.length >= 3) {
+            tux.setStatus("OFF",
+                          String.format("2:%s (%s)", leaders.apply(1)._1, ""+leaders.apply(1)._2),
+                          String.format("3:%s (%s)", leaders.apply(2)._1, ""+leaders.apply(2)._2))
             Thread.sleep(5000)
-          } else if (leaders.length == 4) {
-            tux.setStatus("OFF", String.format("4:%s (%s)", leaders.tail.tail.tail.head._1, ""+leaders.tail.tail.tail.head._2),
-                                 "")
+          }
+          if (leaders.length == 4) {
+            tux.setStatus("OFF",
+                          String.format("4:%s (%s)", leaders.apply(3)._1, ""+leaders.apply(3)._2),
+                          "")
             Thread.sleep(5000)
-          } else if (leaders.length == 5) {
-            tux.setStatus("OFF", String.format("4:%s (%s)", leaders.tail.tail.tail.head._1, ""+leaders.tail.tail.tail.head._2),
-                                 String.format("5:%s (%s)", leaders.tail.tail.tail.tail.head._1, ""+leaders.tail.tail.tail.tail.head._2))
+          } else if (leaders.length >= 5) {
+            tux.setStatus("OFF",
+                          String.format("4:%s (%s)", leaders.apply(3)._1, ""+leaders.apply(3)._2),
+                          String.format("5:%s (%s)", leaders.apply(4)._1, ""+leaders.apply(4)._2))
             Thread.sleep(5000)
           }
         }
@@ -107,7 +112,7 @@ object BuildStatusTuxScheduler extends LiftActor {
   private def fillOutText(any:Any, len:Int, alignLeft:Boolean):String = {
     val text = any.toString
     if (text.length >= len) {
-      text.substring(0,len);
+      text.substring(0,len)
     } else {
       if (!alignLeft) {
         text + " " * (len-text.length())
