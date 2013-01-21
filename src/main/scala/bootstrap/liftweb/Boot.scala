@@ -5,13 +5,13 @@ import _root_.net.liftweb.common._
 import _root_.net.liftweb.http._
 import _root_.net.liftweb.http.provider._
 import _root_.net.liftweb.sitemap._
-import _root_.net.liftweb.sitemap.Loc._
-import Helpers._
-import _root_.net.liftweb.mapper.{DB, ConnectionManager, Schemifier, DefaultConnectionIdentifier, StandardDBVendor}
+import net.liftweb.mapper._
 import _root_.java.sql.{Connection, DriverManager}
 import _root_.net.addictivesoftware.model._
 import _root_.net.addictivesoftware.actors._
-
+import net.liftweb.sitemap.Loc.LocGroup
+import net.liftweb.sitemap.Loc.LocGroup
+import net.liftweb.common.Full
 
 
 /**
@@ -34,14 +34,20 @@ class Boot {
 
     // where to search snippet
     LiftRules.addToPackages("net.addictivesoftware")
-    Schemifier.schemify(true, Schemifier.infoF _, BuildStatus, Job, Leaders)
+    Schemifier.schemify(true, Schemifier.infoF _, BuildStatus, Job, Leaders, User)
+
+    val home = Menu(Loc("Home", "index" :: Nil, "Home", LocGroup("static", "static")))
+    val lb = Menu(Loc("Leaderboard", "leaderboard" :: Nil, "Leaderboard", LocGroup("static", "static")))
+    val jobs = Menu(Loc("Jobs", "jobs" :: Nil, "Jobs", LocGroup("static", "static")))
+    val bs = Menu(Loc("BuildStatuses", "buildstatuses" :: Nil, "BuildStatuses", LocGroup("static", "static")))
 
     // Build SiteMap
     def sitemap() = SiteMap(
-      Menu("Home") / "index" ::
+      home :: jobs :: bs :: lb ::
       BuildStatus.menus :::
       Job.menus :::
-      Leaders.menus
+      Leaders.menus :::
+      User.menus
         :_*)
     LiftRules.setSiteMapFunc(sitemap)
 
@@ -63,6 +69,8 @@ class Boot {
 
     S.addAround(DB.buildLoanWrapper)
 
+    //create admin user if needed
+    makeAdminUser
 
     // Actor to drive Penquin
     BuildStatusTuxScheduler ! BuildStatusTuxScheduler.ScheduleTux
@@ -71,7 +79,9 @@ class Boot {
 
     LiftRules.unloadHooks.append( () => BuildStatusScheduler ! BuildStatusScheduler.Stop )
     LiftRules.unloadHooks.append( () => BuildStatusTuxScheduler ! BuildStatusTuxScheduler.Stop )
+
   }
+
 
   /**
    * Force the request to be UTF-8
@@ -79,4 +89,27 @@ class Boot {
   private def makeUtf8(req: HTTPRequest) {
     req.setCharacterEncoding("UTF-8")
   }
+
+  private def makeAdminUser = {
+    val adminUser = Props.get("admin.user").openTheBox.trim()
+    val adminPassword = Props.get("admin.password").openTheBox.trim()
+
+    User.find(By(User.email, adminUser)) match {
+      case Full(user) => {
+        println("Admin user already exists. skipping generation")
+      }
+      case (_) => {
+        new User()
+          .firstName(adminUser)
+          .lastName(adminUser)
+          .password(adminPassword)
+          .email(adminUser)
+          .superUser(true)
+          .validated(true)
+          .save()
+        println("Admin user created")
+      }
+    }
+  }
+
 }

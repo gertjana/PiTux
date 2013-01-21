@@ -1,8 +1,14 @@
 # Properties in this file will be read when running in dev mode
 jenkins.url=http://masterbuild01.ams.dev:8080/hudson/job/%s/lastBuild/api/json
+
+#first revision board bus=0, second revision board bus=1
 i2c.bus=0
 #0x41
 i2c.address=65
+
 success.count=1
 unstable.count=1
 fail.count=5
+
+admin.user=admin@tux.com
+admin.password=s3cr3t

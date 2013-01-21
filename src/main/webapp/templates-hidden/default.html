@@ -112,8 +112,17 @@ td.LCD div div{
       <hr/>
 
       <div class="column span-6 colborder sidebar">
+
         <hr class="space" />
-        <lift:Menu.builder />	
+        <h4>Menu</h4>
+        <span class="lift:Menu.builder?group=static"></span>
+        <br/>
+        <h4>User Menu</h4>
+        <span class="lift:Menu.builder?group=user"></span>
+        <br/>
+        <h4>CRUD Menu</h4>
+        <span class="lift:Menu.builder?group=crud"></span>
+        <br/>
         <div>
           <lift:Msgs showAll="true"/>
           <hr class="space" />

@@ -29,6 +29,7 @@ class Overview {
     jobs.flatMap {
       case (job) => bind("job", in,
                 "name" -> job.name,
+                "id" -> job.jobid,
                 "interval" -> job.interval)
     }
   }

@@ -1,0 +1,19 @@
+<lift:surround with="default" at="content">
+  <h2>Jobs</h2>
+    <p>Use the Create/List Job menu to manage jobs</p>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Id</th>
+            <th>Interval</th>
+        </tr>
+        <lift:Overview.jobs>
+            <tr>
+                <td><job:name /></td>
+                <td><job:id /></td>
+                <td><job:interval /></td>
+            </tr>
+        </lift:Overview.jobs>
+    </table>
+</lift:surround>
+

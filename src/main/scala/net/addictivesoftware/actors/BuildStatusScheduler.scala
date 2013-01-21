@@ -30,8 +30,10 @@ object BuildStatusScheduler extends LiftActor {
       this ! this.ScheduleJobs
     }
 
+    //not working currently
     case Stop => {
-      println("stop scheduling jobs");
+      println("stop scheduling jobs")
+
       BuildStatusRetrievalActor ! BuildStatusRetrievalActor.Stop
     }
   }

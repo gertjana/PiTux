@@ -50,11 +50,11 @@ object BuildStatusRetrievalActor extends LiftActor {
 
               if (culpritsListJson.isInstanceOf[JArray])
                 culpritsList :: culpritsListJson.extract[List[String]]
-              if (culpritsList.size > 0) {
-                culprits = culpritsList.reduceLeft(_ + ", " + _)
-              }
-              else if (culpritsListJson.isInstanceOf[JString])
-                culprits = culpritsListJson.extract[String]
+                if (culpritsList.size > 0) {
+                  culprits = culpritsList.reduceLeft(_ + ", " + _)
+                }
+                else if (culpritsListJson.isInstanceOf[JString])
+                  culprits = culpritsListJson.extract[String]
               else
                 culprits = "..."
 
@@ -101,11 +101,11 @@ object BuildStatusRetrievalActor extends LiftActor {
       println("unknown message recieved")
   }
 
-  private def updateLeaders(culprits:String, result:String) {
+  private def updateLeaders(culprit:String, result:String) {
 
 
-    if (result.equals("...")) return
-    Leaders.find(By(Leaders.culprits, culprits)) match {
+    if (culprit.equals("...")) return
+    Leaders.find(By(Leaders.culprits, culprit)) match {
       case (Full(leader)) => {
         //existing Leader, updating
         if (result.equals("SUCCESS")) {
@@ -123,7 +123,7 @@ object BuildStatusRetrievalActor extends LiftActor {
       case (_) => {
         //new Leader, creating
         val leader = new Leaders()
-        leader.culprits(culprits)
+        leader.culprits(culprit)
         if (result.equals("SUCCESS")) {
           leader.successCount(successCount)
           leader.failCount(0)

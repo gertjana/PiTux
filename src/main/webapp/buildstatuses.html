@@ -1,0 +1,24 @@
+<lift:surround with="default" at="content">
+  <h2>Last known statuses</h2>
+    <p>The same status is never stored more than once</p>
+	<table>
+        <tr>
+            <th>Job</th>
+            <th>Build#</th>
+            <th>Result</th>
+            <th>Time</th>
+            <th>Culprits</th>
+        </tr>
+      <lift:Overview.statuses>
+        <tr>
+            <td><status:job /></td>
+            <td><status:number /></td>
+            <td><status:result /></td>
+            <td><status:timestamp /></td>
+            <td><status:culprits /></td>
+        </tr>
+      </lift:Overview.statuses>
+    </table>
+
+</lift:surround>
+
