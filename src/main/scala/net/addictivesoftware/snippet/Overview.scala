@@ -6,8 +6,7 @@ import net.addictivesoftware.model.{Leaders, Job, BuildStatus}
 import net.liftweb.mapper._
 import net.liftweb.mapper.MaxRows
 import collection.mutable
-import net.liftweb.common.Full
-import collection.immutable.HashSet
+import collection.mutable.ListBuffer
 
 
 class Overview {
@@ -55,12 +54,29 @@ class Overview {
 
   def leaders(in:NodeSeq) : NodeSeq = {
     val leaders:List[Leaders] = Leaders.findAll()
-    leaders.map(leader => new Tuple2(leader.culprits, leader.successCount-leader.failCount))
-        .sortBy(_._2).reverse
-        .flatMap {
-          case (a,b) => bind("leader", in,
-            "culprit" -> a,
-            "count" -> b)
-        }.toSeq
+    var sortedLeaders = leaders
+      .map(leader => new Tuple3("", leader.culprits.is, leader.successCount.is-leader.failCount.is))
+      .sortBy(_._3).reverse
+    var cnt = 0
+    var previous:Long = 0
+    val board = new ListBuffer[Tuple3[String, String, Long]]()
+    for (leader <- sortedLeaders) {
+      if (leader._3 != previous) {
+        previous = leader._3
+        cnt = cnt + 1
+        board.append(new Tuple3(cnt.toString, leader._2, leader._3))
+      } else {
+        board.append(new Tuple3("", leader._2, leader._3))
+      }
+
+    }
+    board.toList.flatMap {
+      case (pos, name, count) => bind("leader", in,
+        "position" -> pos,
+        "culprit" -> name,
+        "count" -> count)
+    }.toSeq
+
   }
+
 }
