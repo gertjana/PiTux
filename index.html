@@ -39,62 +39,47 @@
           Project is running on a <a href="http://raspberrypi.org">Raspberry Pi</a> using the <a href="http://pi4j.com/">pi4j.com library</a> to drive the LED eyes connected to 2 GPIO pins and the LCD on the I2C pins
         </p>
 
-<h2>Requirements</h2>
+        <h2>Installation instructions</h2>
 
-<table>
-    <tr>
-        <td>1</td>
-        <td>Raspberry Pi</td>
-    </tr>
-    <tr>
-        <td>1</td>
-        <td>I2C enabled LCD Display</td>
-    </tr>
-    <tr>
-        <td>2</td>
-        <td>Two color led's (red/green)</td>
-    </tr>
-    <tr>
-        <td>4</td>
-        <td>BC547B transistors</td>
-    </tr>
-    <tr>
-        <td>4</td>
-        <td>4k7 Resistors</td>
-    </tr>
-    <tr>
-        <td>4</td>
-        <td>220E Resistors</td>
-    </tr>
-    <tr>
-        <td>1</td>
-        <td>Connector for Raspberry IO (2x13 pins)</td>
-    </tr>
-    <tr>
-        <td></td>
-        <td>some wire to connect from the RPi connector to the LCD display and the leds</td>
-    </tr>
-    <tr>
-        <td>some</td>
-        <td>experiment board, (in my case cut to fit in the penguin's head)</td>
-    </tr>
-</table>
+        <ul>
+            <li>Install Raspian hard float image from here <a href="http://www.raspberrypi.org/downloads">Raspian "Wheezy"</a>
+                <ul>
+                    <li>make sure you run raspi-config as root</li>
+                </ul>
+            </li>
+            <li>Install java 1.8 preview from here <a href="http://jdk7.java.net/fxarmpreview/">java 1.8 preview with javafx and hardfloat support</a>
+                <ul>
+                    <li>use update-alternatives to make sure it's the default</li>
+                    <li>make sure JAVA_HOME is set</li>
+                </ul>
+            </li>
+            <li>Install <a href="http://tomcat.apache.org">tomcat 7</a> </li>
+                <ul>
+                    <li>Optionally: compile and install the native jar from tomcat, made it about 10% faster for me</li>
+                </ul>
+            <li>Enable I2C instructions here <a href="http://donalmorrissey.blogspot.nl/2012/09/enabling-i2c-on-raspberry-pi.html">enabling-i2c-on-raspberry-pi</a>
+                <ul>
+                    <li>Note that on 1st revision boards, the I2C is on bus 0, on 2nd revision's it's on bus 1</li>
+                </ul>
+            </li>
+            <li>Clone this repository, run "mvn package" to build it
+                <ul>
+                    <li>
+                        If you want to change some of the properties (I2C Bus, and address, and the admin user/password<br/>
+                        look in /src/main/resources/props/default.props<br/>
+                        or in the webapp dir in tomcat /pitux/WEB-INF/classes/props/default.props
 
-<h2>Installation instructions</h2>
+                    </li>
+                </ul>
+            </li>
+            <li>deploy war to tomcat</li>
+        </ul>
 
-<ul>
-<li>Install Raspian hard float image from here <a href="http://www.raspberrypi.org/downloads">Raspian "Wheezy"</a>
-</li>
-<li>Install java 1.8 preview from here <a href="http://jdk7.java.net/fxarmpreview/">java 1.8 preview with javafx and hardfloat support</a>
-</li>
-<li>Install <a href="http://tomcat.apache.org">tomcat 7</a> </li>
-<li>Enable I2C instructions here <a href="http://donalmorrissey.blogspot.nl/2012/09/enabling-i2c-on-raspberry-pi.html">enabling-i2c-on-raspberry-pi</a>
-</li>
-<li>Clone this repository, build with maven</li>
-<li>deploy war to tomcat</li>
-</ul><h2>Electronics Schematic :</h2>
+         <h2>Schematic :</h2>
 
-<p><img src="http://farm9.staticflickr.com/8044/8403994607_aa7a88ecc0_d.jpg" alt="Electronics"></p>
+        <p>
+            <img src="http://farm9.staticflickr.com/8044/8403994607_aa7a88ecc0_d.jpg" alt="Electronics">
+        </p>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/gertjana">gertjana</a></p>
