@@ -2,3 +2,5 @@
 project/
 target/
 *.iml
+lift_proto.db*
+src/
