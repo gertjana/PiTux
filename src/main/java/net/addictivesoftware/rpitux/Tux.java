@@ -5,11 +5,16 @@ import com.pi4j.io.i2c.I2CBus;
 import com.pi4j.io.i2c.I2CDevice;
 import com.pi4j.io.i2c.I2CFactory;
 import com.sun.servicetag.SystemEnvironment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class Tux {
+    private static final Logger logger = LoggerFactory.getLogger(Tux.class);
+
+
     public static boolean isArm = SystemEnvironment.getSystemEnvironment().getOsArchitecture().equals("arm");
 
     private int i2cBus = 1;
@@ -45,6 +50,7 @@ public class Tux {
     public Tux() {}
 
     public Tux(int bus, byte address) {
+        logger.info("Initializing Tux");
         this.i2cBus = bus;
         this.i2cAddress = address;
     }
@@ -56,15 +62,14 @@ public class Tux {
                 setLcd(limitText(build), limitText(culprits));
                 setEyes(status);
             } catch (Exception e){
-               System.out.println(e.getMessage());
-               e.printStackTrace(System.out);
+               logger.error("setting status failed", e);
             }
         } else {
-            System.out.println(status);
-            System.out.println("--------------");
-            System.out.println(limitText(build));
-            System.out.println(limitText(culprits));
-            System.out.println("--------------");
+            logger.info(status);
+            logger.info("--------------");
+            logger.info(limitText(build));
+            logger.info(limitText(culprits));
+            logger.info("--------------");
         }
 
     }

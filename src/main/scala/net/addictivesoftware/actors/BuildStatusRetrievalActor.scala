@@ -8,9 +8,9 @@ import net.addictivesoftware.model.{Leaders, BuildStatus}
 import dispatch._
 import java.util.Date
 import net.liftweb.mapper.By
-import net.liftweb.common.{Box, Full}
+import net.liftweb.common.{Loggable, Box, Full}
 
-object BuildStatusRetrievalActor extends LiftActor {
+object BuildStatusRetrievalActor extends LiftActor with Loggable {
   case class RetrieveStatus(jobName:String, jobId:String, interval:Int)
   case class Stop()
 
@@ -30,7 +30,7 @@ object BuildStatusRetrievalActor extends LiftActor {
       if (!stopped)
         Schedule.schedule(this, RetrieveStatus(jobName, jobId, interval), interval minutes)
       try {
-        println("Running job " + jobName)
+        logger.info("Running job: " + jobName)
         jenkinsUrl match {
           case Full(u) => {
             val request = url(u.format(myUrlEncode(jobName)))
@@ -74,31 +74,31 @@ object BuildStatusRetrievalActor extends LiftActor {
                   By(BuildStatus.buildId, buildStatus.buildId),
                   By(BuildStatus.job, jobId)) match {
                   case Full(bs) => {
-                    println("already known build")
+                   logger.info("already known build")
                   }
                   case (_) => {
                     val savedBS = buildStatus.saveMe();
-                    println("saving " + savedBS)
+                    logger.info("saving " + savedBS)
                     updateLeaders(culprits, result)
                   }
                 }
               }
             } else {
-              println("skipping not finished build")
+              logger.info("skipping not finished build")
             }
           }
           case (_) => {
-            println("Url in properties file set?")
+            logger.warn("Server not reachable, or Url in properties file not set correctly")
           }
         }
     } catch {
-      case e:Exception => {println(e)}
+      case e:Exception => {logger.error(e)}
     }
 
     case Stop =>
       stopped = true
     case (_) =>
-      println("unknown message recieved")
+      logger.info("unknown message recieved")
   }
 
   private def updateLeaders(culprit:String, result:String) {

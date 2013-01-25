@@ -3,8 +3,9 @@ package net.addictivesoftware.actors
 import net.liftweb.actor.LiftActor
 import net.addictivesoftware.model.Job
 import collection.mutable.HashMap
+import net.liftweb.common.Loggable
 
-object BuildStatusScheduler extends LiftActor {
+object BuildStatusScheduler extends LiftActor with Loggable {
   case class ScheduleJobs()
   case class Stop()
   case class ResetJobs()
@@ -12,27 +13,27 @@ object BuildStatusScheduler extends LiftActor {
 
   def messageHandler = {
     case ScheduleJobs => {
-      println("scheduling jobs")
+      logger.info("scheduling jobs")
       Job.findAll().map(job => {
           BuildStatusRetrievalActor ! BuildStatusRetrievalActor.RetrieveStatus(job.name.is, job.jobid.is, job.interval.is)
       })
     }
 
     case AddJob(jobName:String, jobId:String, interval:Int) => {
-      println("adding job :" + jobName)
+      logger.info("adding job :" + jobName)
       if (jobName.length > 0 && interval > 0)
         BuildStatusRetrievalActor ! BuildStatusRetrievalActor.RetrieveStatus(jobName, jobId, interval)
     }
 
     case ResetJobs => {
-      println("resetting jobs ...")
+      logger.info("resetting jobs ...")
       this ! this.Stop
       this ! this.ScheduleJobs
     }
 
     //not working currently
     case Stop => {
-      println("stop scheduling jobs")
+      logger.info("stop scheduling jobs")
 
       BuildStatusRetrievalActor ! BuildStatusRetrievalActor.Stop
     }

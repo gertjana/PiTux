@@ -2,8 +2,9 @@ package net.addictivesoftware.actors
 
 import net.liftweb.actor.LiftActor
 import net.addictivesoftware.model.Leaders
+import net.liftweb.common.Loggable
 
-object BuildStatusTuxScheduler extends LiftActor {
+object BuildStatusTuxScheduler extends LiftActor with Loggable {
   import net.addictivesoftware.model.{Job, BuildStatus}
   import collection.mutable
   import net.liftweb.mapper.{Descending, OrderBy}
@@ -25,7 +26,7 @@ object BuildStatusTuxScheduler extends LiftActor {
 
         val tux = new Tux(bus.toInt, address.toByte)
 
-        println("Schedule Tux...")
+        logger.info("Schedule Tux...")
         val rotationJobs: mutable.HashMap[String, (String, String)] = new mutable.HashMap[String, (String, String)]()
         val bs = BuildStatus.findAll(OrderBy(BuildStatus.timestamp, Descending))
         val jobs: List[String] = Job.findAll().map(_.jobid.is)
@@ -50,9 +51,9 @@ object BuildStatusTuxScheduler extends LiftActor {
           Thread.sleep(2 seconds)
           tux.setStatus("OFF", "SUCC UNST FAIL",
             String.format("%s%% %s%% %s%%",
-              fillOutText((aggregated.get("SUCCESS").get*100/rotationJobs.size), 3, alignLeft = true),
-              fillOutText((aggregated.get("UNSTABLE").get*100/rotationJobs.size), 3, alignLeft = true),
-              fillOutText((aggregated.get("FAILURE").get*100/rotationJobs.size), 3, alignLeft = true)
+              fillOutText((aggregated.get("SUCCESS").get*100/rotationJobs.size), 3, true),
+              fillOutText((aggregated.get("UNSTABLE").get*100/rotationJobs.size), 3, true),
+              fillOutText((aggregated.get("FAILURE").get*100/rotationJobs.size), 3, true)
             ))
           Thread.sleep(5 seconds)
           val leaders:List[(String, Long)] = Leaders.findAll().map(leader => new Tuple2(leader.culprits.is, leader.successCount.is-leader.failCount.is))
@@ -89,7 +90,7 @@ object BuildStatusTuxScheduler extends LiftActor {
 
         //show jobs
         rotationJobs.foreach(status => {
-          println("setting status for " + status._1)
+          logger.info("setting status for " + status._1)
           tux.setStatus(status._2._1, status._1, status._2._2)
           Thread.sleep(5 seconds)
         })
@@ -104,7 +105,7 @@ object BuildStatusTuxScheduler extends LiftActor {
     case Stop =>
       this.stopped = true
     case (_) =>
-      println("unknown message recieved")
+      logger.info("unknown message recieved")
   }
 
 
