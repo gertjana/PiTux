@@ -1,14 +1,18 @@
-# Properties in this file will be read when running in dev mode
+#Url to Hudson/Jenkins Server
 jenkins.url=http://masterbuild01.ams.dev:8080/hudson/job/%s/lastBuild/api/json
 
-#first revision board bus=0, second revision board bus=1
+#raspberry pi i2c settings, first revision board bus=0, second revision board bus=1
 i2c.bus=0
-#0x41
 i2c.address=65
 
+#weights
 success.count=1
 unstable.count=1
 fail.count=5
 
+#automagically created admin user
 admin.user=admin@tux.com
 admin.password=s3cr3t
+
+#if set will display this the last successful build of a main build including build nr
+main.build=SDL Tridion

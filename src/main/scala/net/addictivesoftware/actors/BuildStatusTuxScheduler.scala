@@ -2,7 +2,8 @@ package net.addictivesoftware.actors
 
 import net.liftweb.actor.LiftActor
 import net.addictivesoftware.model.Leaders
-import net.liftweb.common.Loggable
+import net.liftweb.common.{Full, Loggable}
+import net.liftweb.mapper.By
 
 object BuildStatusTuxScheduler extends LiftActor with Loggable {
   import net.addictivesoftware.model.{Job, BuildStatus}
@@ -56,6 +57,24 @@ object BuildStatusTuxScheduler extends LiftActor with Loggable {
               fillOutText((aggregated.get("FAILURE").get*100/rotationJobs.size), 3, true)
             ))
           Thread.sleep(5 seconds)
+
+          Props.get("main.build") match {
+            case Full(build) => {
+              BuildStatus.find(By(BuildStatus.job, build), By(BuildStatus.result, "SUCCESS"), OrderBy(BuildStatus.timestamp, Descending)) match {
+                case Full(buildStatus) => {
+                  tux.setStatus(buildStatus.result.is, buildStatus.job.is, "STABLE: #"+buildStatus.number.is)
+                  Thread.sleep(5 seconds)
+                }
+                case (_) => {
+                  logger.warn("no buildstatus found for: " + build)
+                }
+              }
+            }
+            case (_) => {
+             logger.info("no main build configured, skippping displaying");
+            }
+          }
+
           val leaders:List[(String, Long)] = Leaders.findAll().map(leader => new Tuple2(leader.culprits.is, leader.successCount.is-leader.failCount.is))
             .sortBy(_._2).reverse.toStream.take(5).toList
           if (leaders.length >= 1) {
