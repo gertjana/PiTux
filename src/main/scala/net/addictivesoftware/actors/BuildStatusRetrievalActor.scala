@@ -96,6 +96,7 @@ object BuildStatusRetrievalActor extends LiftActor with Loggable {
     }
 
     case Stop =>
+      logger.debug("stopping " + this)
       stopped = true
     case (_) =>
       logger.info("unknown message recieved")

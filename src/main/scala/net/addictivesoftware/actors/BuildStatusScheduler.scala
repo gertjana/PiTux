@@ -2,7 +2,7 @@ package net.addictivesoftware.actors
 
 import net.liftweb.actor.LiftActor
 import net.addictivesoftware.model.Job
-import collection.mutable.HashMap
+import collection.mutable.LinkedList
 import net.liftweb.common.Loggable
 
 object BuildStatusScheduler extends LiftActor with Loggable {
@@ -11,11 +11,15 @@ object BuildStatusScheduler extends LiftActor with Loggable {
   case class ResetJobs()
   case class AddJob(jobName:String, jobId:String, interval:Int)
 
+  var jobActors:List[LiftActor] = Nil
+
   def messageHandler = {
     case ScheduleJobs => {
       logger.info("scheduling jobs")
-      Job.findAll().map(job => {
-          BuildStatusRetrievalActor ! BuildStatusRetrievalActor.RetrieveStatus(job.name.is, job.jobid.is, job.interval.is)
+      jobActors  = Job.findAll().map(job => {
+        val buildStatusRetrievalActor = BuildStatusRetrievalActor
+        buildStatusRetrievalActor ! BuildStatusRetrievalActor.RetrieveStatus(job.name.is, job.jobid.is, job.interval.is)
+        buildStatusRetrievalActor
       })
     }
 
@@ -33,9 +37,10 @@ object BuildStatusScheduler extends LiftActor with Loggable {
 
     //not working currently
     case Stop => {
-      logger.info("stop scheduling jobs")
-
-      BuildStatusRetrievalActor ! BuildStatusRetrievalActor.Stop
+      logger.debug("stop scheduling BuildStatusRetrieval jobs")
+      for (jobActor <- jobActors) {
+        jobActor ! BuildStatusRetrievalActor.Stop
+      }
     }
   }
 
